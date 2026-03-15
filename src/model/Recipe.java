@@ -18,7 +18,7 @@ public class Recipe implements Serializable {
      * @param name user-visible recipe name
      */
     public Recipe(String name) {
-        this.name = name;
+        this.name = name.trim();
         ingredients = new ArrayList<>();
     }
 
@@ -54,7 +54,7 @@ public class Recipe implements Serializable {
     }
 
     public void setDirections(String directions) {
-        this.directions = directions;
+        this.directions = (directions == null) ? "" : directions.trim();
     }
     /**
      * updates recipe name when non empty
