@@ -20,3 +20,6 @@ The Dumpster Cookbook is a community-driven project focused on sustainability, u
 
 ```bash
 git clone https://github.com/username/dumpster_cookbook.git
+```
+## App
+![alt text](https://github.com/akoli-pilot/dumpster_cookbook/blob/main/dc.png)
