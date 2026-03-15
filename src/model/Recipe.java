@@ -12,6 +12,7 @@ public class Recipe implements Serializable {
 
     private String name;
     private final List<Ingredient> ingredients;
+    private String directions = "";
 
     /**
      * @param name user-visible recipe name
@@ -47,6 +48,14 @@ public class Recipe implements Serializable {
         return name;
     }
 
+    /** Get Directions for Recipe Display */
+    public String getDirections() {
+        return directions;
+    }
+
+    public void setDirections(String directions) {
+        this.directions = directions;
+    }
     /**
      * updates recipe name when non empty
      */
