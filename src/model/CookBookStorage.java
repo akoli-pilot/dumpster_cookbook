@@ -226,7 +226,7 @@ public class CookBookStorage {
                             continue;
                         }
 
-                        recipe.addIngredient(ingredientName, amountNumber.doubleValue());
+                        recipe.addIngredient(ingredientName, amountNumber.doubleValue(), "");
                     }
                 });
             }

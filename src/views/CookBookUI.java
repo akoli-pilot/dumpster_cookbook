@@ -40,8 +40,10 @@ public class CookBookUI extends Application {
     private TextField recipeNameField;
     private TextField ingredientNameField;
     private TextField ingredientAmountField;
+    private TextField ingredientUnitField;
     private TextField inventoryIngredientField;
     private TextField inventoryAmountField;
+
 
     private Label recipeStatusLabel;
     private Label ingredientStatusLabel;
@@ -105,15 +107,15 @@ public class CookBookUI extends Application {
         seeded.addRecipe("Omelette");
 
         seeded.findRecipe("Pancakes").ifPresent(recipe -> {
-            recipe.addIngredient("Flour", 100);
-            recipe.addIngredient("Milk", 200);
-            recipe.addIngredient("Eggs", 1);
+            recipe.addIngredient("Flour", 1, "cups");
+            recipe.addIngredient("Milk", 2, "cups");
+            recipe.addIngredient("Eggs", 1, "count");
         });
 
         seeded.findRecipe("Omelette").ifPresent(recipe -> {
-            recipe.addIngredient("Eggs", 2);
-            recipe.addIngredient("Milk", 40);
-            recipe.addIngredient("Cheese", 25);
+            recipe.addIngredient("Eggs", 2, "count");
+            recipe.addIngredient("Milk", 2, "cups");
+            recipe.addIngredient("Cheese", 1, "cups");
         });
 
         cookBook = seeded;
@@ -241,11 +243,13 @@ public class CookBookUI extends Application {
             if (selected == null) {
                 ingredientNameField.clear();
                 ingredientAmountField.clear();
+                ingredientUnitField.clear();
                 return;
             }
 
             ingredientNameField.setText(selected.getName());
             ingredientAmountField.setText(String.valueOf(selected.getAmountPerServing()));
+            ingredientUnitField.setText(selected.getUnit());
         });
 
         Label recipeSelectorTitle = new Label("Recipe");
@@ -266,6 +270,10 @@ public class CookBookUI extends Application {
         ingredientAmountField.setPromptText("Amount per serving");
         ingredientAmountField.getStyleClass().add("md-input");
 
+        ingredientUnitField = new TextField();
+        ingredientUnitField.setPromptText("Unit of serving");
+        ingredientUnitField.getStyleClass().add("md-input");
+
         Button createButton = new Button("Create");
         createButton.getStyleClass().add("filled-button");
         createButton.setOnAction(e -> createIngredient());
@@ -284,6 +292,7 @@ public class CookBookUI extends Application {
             ingredientListView.getSelectionModel().clearSelection();
             ingredientNameField.clear();
             ingredientAmountField.clear();
+            ingredientUnitField.clear();
             ingredientStatusLabel.setText("");
         });
 
@@ -302,6 +311,7 @@ public class CookBookUI extends Application {
             editorTitle,
                 ingredientNameField,
                 ingredientAmountField,
+                ingredientUnitField,
                 buttons,
                 ingredientStatusLabel
         );
@@ -439,6 +449,7 @@ public class CookBookUI extends Application {
             return;
         }
 
+        /** Delete recipe confirmation pop up */
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete Recipe");
         confirm.setHeaderText("Delete Recipe: " + selected.getName() + "?");
@@ -459,6 +470,7 @@ public class CookBookUI extends Application {
             ingredientListView.getSelectionModel().clearSelection();
             ingredientNameField.clear();
             ingredientAmountField.clear();
+            ingredientUnitField.clear();
             persistAndReport(recipeStatusLabel, "Recipe deleted.");
             return;
         }
@@ -480,7 +492,7 @@ public class CookBookUI extends Application {
             return;
         }
 
-        if (selectedRecipe.addIngredient(ingredientNameField.getText(), amount)) {
+        if (selectedRecipe.addIngredient(ingredientNameField.getText(), amount, ingredientUnitField.getText())) {
             refreshIngredients(selectedRecipe);
             syncInventoryWithRecipeIngredients();
             refreshInventoryView(ingredientNameField.getText().trim());
@@ -515,7 +527,7 @@ public class CookBookUI extends Application {
         String existingName = selectedIngredient.getName();
         String newName = ingredientNameField.getText();
 
-        if (selectedRecipe.updateIngredient(existingName, newName, amount)) {
+        if (selectedRecipe.updateIngredient(existingName, newName, amount, ingredientUnitField.getText())) {
             // Preserve available stock when a user only renames an ingredient.
             transferInventoryAmount(existingName, newName);
             refreshIngredients(selectedRecipe);
@@ -544,6 +556,7 @@ public class CookBookUI extends Application {
             return;
         }
 
+        /** Delete Ingredient confirmation pop up */
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Delete Ingredient");
         confirm.setHeaderText("Delete Ingredient: " + selectedIngredient + "?");
@@ -561,6 +574,7 @@ public class CookBookUI extends Application {
             refreshInventoryView(null);
             ingredientNameField.clear();
             ingredientAmountField.clear();
+            ingredientUnitField.clear();
             persistAndReport(ingredientStatusLabel, "Ingredient deleted.");
             return;
         }

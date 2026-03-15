@@ -24,7 +24,7 @@ public class Recipe implements Serializable {
     /**
      * adds an ingredient if name is valid, amount is positive, and no duplicate exists
      */
-    public boolean addIngredient(String name, double amount) {
+    public boolean addIngredient(String name, double amount, String unit) {
         if (name == null || name.isBlank() || amount <= 0) {
             return false;
         }
@@ -33,7 +33,7 @@ public class Recipe implements Serializable {
             return false;
         }
 
-        ingredients.add(new Ingredient(name.trim(), amount));
+        ingredients.add(new Ingredient(name.trim(), amount, unit));
         return true;
     }
 
@@ -75,7 +75,7 @@ public class Recipe implements Serializable {
     /**
      * updates an ingredient and prevents duplicate names in the same recipe
      */
-    public boolean updateIngredient(String existingName, String newName, double newAmount) {
+    public boolean updateIngredient(String existingName, String newName, double newAmount, String newUnit) {
         if (newName == null || newName.isBlank() || newAmount <= 0) {
             return false;
         }
@@ -93,6 +93,7 @@ public class Recipe implements Serializable {
         Ingredient ingredient = existingIngredient.get();
         ingredient.setName(newName.trim());
         ingredient.setAmountPerServing(newAmount);
+        ingredient.setUnit(newUnit.trim());
         return true;
     }
 

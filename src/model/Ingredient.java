@@ -11,14 +11,17 @@ public class Ingredient implements Serializable {
 
     private String name;
     private double amountPerServing;
+    private String unit;
 
     /**
      * @param name ingredient display name
      * @param amountPerServing amount consumed to produce one serving
+     * @param unit measurment unit (cups, tbsp, tsp, etc)
      */
-    public Ingredient(String name, double amountPerServing) {
+    public Ingredient(String name, double amountPerServing, String unit) {
         this.name = name;
         this.amountPerServing = amountPerServing;
+        this.unit = unit;
     }
 
     /** returns the ingredient name */
@@ -41,9 +44,17 @@ public class Ingredient implements Serializable {
         this.amountPerServing = amountPerServing;
     }
 
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
     /** returns a concise, user facing description string */
     @Override
     public String toString() {
-        return name + " (" + amountPerServing + " per serving)";
+        return amountPerServing + " " + unit + " " + name;
     }
 }
