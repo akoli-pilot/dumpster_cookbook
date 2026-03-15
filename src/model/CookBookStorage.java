@@ -107,6 +107,7 @@ public class CookBookStorage {
             Recipe recipe = recipes.get(i);
             sb.append("    {\n");
             sb.append("      \"name\": \"").append(escapeJson(recipe.getName())).append("\",\n");
+            sb.append("      \"directions\": \"").append(escapeJson(recipe.getDirections())).append("\",\n");
             sb.append("      \"ingredients\": [\n");
 
             List<Ingredient> ingredients = recipe.getIngredients();
@@ -202,6 +203,9 @@ public class CookBookStorage {
                     continue;
                 }
 
+                Object directionsObj = recipeMap.get("directions");
+                String directions = (directionsObj instanceof String d) ? d : "";
+
                 if (!cookBook.addRecipe(recipeName)) {
                     continue;
                 }
@@ -212,6 +216,8 @@ public class CookBookStorage {
                 }
 
                 cookBook.findRecipe(recipeName).ifPresent(recipe -> {
+                    recipe.setDirections(directions);
+
                     for (Object ingredientObj : ingredientList) {
                         if (!(ingredientObj instanceof Map<?, ?> ingredientMap)) {
                             continue;
