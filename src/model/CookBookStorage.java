@@ -116,7 +116,9 @@ public class CookBookStorage {
                         .append(escapeJson(ingredient.getName()))
                         .append("\", \"amountPerServing\": ")
                         .append(ingredient.getAmountPerServing())
-                        .append("}");
+                        .append(", \"unit\": \"")
+                        .append(escapeJson(ingredient.getUnit()))
+                        .append("\"}");
 
                 if (j < ingredients.size() - 1) {
                     sb.append(",");
@@ -226,7 +228,10 @@ public class CookBookStorage {
                             continue;
                         }
 
-                        recipe.addIngredient(ingredientName, amountNumber.doubleValue());
+                        Object unitObj = ingredientMap.get("unit");
+                        String unit = (unitObj instanceof String u) ? u : "";
+
+                        recipe.addIngredient(ingredientName, amountNumber.doubleValue(), unit);
                     }
                 });
             }

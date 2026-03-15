@@ -36,6 +36,7 @@ public class CookBookUI extends Application {
     private ListView<Ingredient> ingredientListView;
     private ListView<String> inventoryListView;
     private ComboBox<Recipe> recipePicker;
+    private ComboBox<String> ingredientUnitField;
 
     private TextField recipeNameField;
     private TextField ingredientNameField;
@@ -43,9 +44,12 @@ public class CookBookUI extends Application {
     private TextField inventoryIngredientField;
     private TextField inventoryAmountField;
 
+
     private Label recipeStatusLabel;
     private Label ingredientStatusLabel;
     private Label inventoryStatusLabel;
+
+    private Stage primaryStage;
 
     /**
      * Initializes the scene graph, loads persisted data, and applies the app theme.
@@ -86,6 +90,8 @@ public class CookBookUI extends Application {
         stage.setTitle("Dumpster Cookbook");
         stage.setScene(scene);
         stage.show();
+
+        this.primaryStage = stage;
     }
 
     /**
@@ -105,15 +111,15 @@ public class CookBookUI extends Application {
         seeded.addRecipe("Omelette");
 
         seeded.findRecipe("Pancakes").ifPresent(recipe -> {
-            recipe.addIngredient("Flour", 100);
-            recipe.addIngredient("Milk", 200);
-            recipe.addIngredient("Eggs", 1);
+            recipe.addIngredient("Flour", 1, "cups");
+            recipe.addIngredient("Milk", 2, "cups");
+            recipe.addIngredient("Eggs", 1, "count");
         });
 
         seeded.findRecipe("Omelette").ifPresent(recipe -> {
-            recipe.addIngredient("Eggs", 2);
-            recipe.addIngredient("Milk", 40);
-            recipe.addIngredient("Cheese", 25);
+            recipe.addIngredient("Eggs", 2, "count");
+            recipe.addIngredient("Milk", 2, "cups");
+            recipe.addIngredient("Cheese", 1, "cups");
         });
 
         cookBook = seeded;
@@ -158,6 +164,18 @@ public class CookBookUI extends Application {
             recipeNameField.setText(selected.getName());
             recipePicker.getSelectionModel().select(selected);
             refreshIngredients(selected);
+        });
+
+        recipeListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+
+                Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
+
+                if (selected != null) {
+                    Scene currentScene = primaryStage.getScene();
+                    new RecipeDetailsView(primaryStage, currentScene, selected).show();
+                }
+            }
         });
 
         Label listTitle = new Label("Recipe List");
@@ -241,11 +259,13 @@ public class CookBookUI extends Application {
             if (selected == null) {
                 ingredientNameField.clear();
                 ingredientAmountField.clear();
+                ingredientUnitField.setValue(null);
                 return;
             }
 
             ingredientNameField.setText(selected.getName());
             ingredientAmountField.setText(String.valueOf(selected.getAmountPerServing()));
+            ingredientUnitField.setValue(selected.getUnit());
         });
 
         Label recipeSelectorTitle = new Label("Recipe");
@@ -266,6 +286,33 @@ public class CookBookUI extends Application {
         ingredientAmountField.setPromptText("Amount per serving");
         ingredientAmountField.getStyleClass().add("md-input");
 
+        ingredientUnitField = new ComboBox<>();
+        ingredientUnitField.getItems().addAll(
+                "Cup",
+                "Tablespoon",
+                "Teaspoon",
+                "Milliliter",
+                "Liter",
+                "Pint",
+                "Quart",
+                "Gallon",
+                "Gram",
+                "Kilogram",
+                "Ounce",
+                "Pound",
+                "Count",
+                "Piece",
+                "Pinch",
+                "Dash",
+                "Slice",
+                "Clove",
+                "Can",
+                "Package",
+                "Stick"
+        );
+        ingredientUnitField.setPromptText("Unit of Measurement");
+        ingredientUnitField.getStyleClass().add("md-input");
+
         Button createButton = new Button("Create");
         createButton.getStyleClass().add("filled-button");
         createButton.setOnAction(e -> createIngredient());
@@ -284,6 +331,7 @@ public class CookBookUI extends Application {
             ingredientListView.getSelectionModel().clearSelection();
             ingredientNameField.clear();
             ingredientAmountField.clear();
+            ingredientUnitField.setValue(null);
             ingredientStatusLabel.setText("");
         });
 
@@ -302,6 +350,7 @@ public class CookBookUI extends Application {
             editorTitle,
                 ingredientNameField,
                 ingredientAmountField,
+                ingredientUnitField,
                 buttons,
                 ingredientStatusLabel
         );
@@ -439,6 +488,18 @@ public class CookBookUI extends Application {
             return;
         }
 
+        /** Delete recipe confirmation pop up */
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Recipe");
+        confirm.setHeaderText("Delete Recipe: " + selected.getName() + "?");
+        confirm.setContentText("Are you sure you want to delete this recipe? This action cannot be undone.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
         String deletedName = selected.getName();
         if (cookBook.removeRecipe(deletedName)) {
             refreshRecipes(null);
@@ -448,6 +509,7 @@ public class CookBookUI extends Application {
             ingredientListView.getSelectionModel().clearSelection();
             ingredientNameField.clear();
             ingredientAmountField.clear();
+            ingredientUnitField.setValue(null);
             persistAndReport(recipeStatusLabel, "Recipe deleted.");
             return;
         }
@@ -469,7 +531,7 @@ public class CookBookUI extends Application {
             return;
         }
 
-        if (selectedRecipe.addIngredient(ingredientNameField.getText(), amount)) {
+        if (selectedRecipe.addIngredient(ingredientNameField.getText(), amount, ingredientUnitField.getValue())) {
             refreshIngredients(selectedRecipe);
             syncInventoryWithRecipeIngredients();
             refreshInventoryView(ingredientNameField.getText().trim());
@@ -504,7 +566,7 @@ public class CookBookUI extends Application {
         String existingName = selectedIngredient.getName();
         String newName = ingredientNameField.getText();
 
-        if (selectedRecipe.updateIngredient(existingName, newName, amount)) {
+        if (selectedRecipe.updateIngredient(existingName, newName, amount, ingredientUnitField.getValue())) {
             // Preserve available stock when a user only renames an ingredient.
             transferInventoryAmount(existingName, newName);
             refreshIngredients(selectedRecipe);
@@ -533,12 +595,25 @@ public class CookBookUI extends Application {
             return;
         }
 
+        /** Delete Ingredient confirmation pop up */
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Ingredient");
+        confirm.setHeaderText("Delete Ingredient: " + selectedIngredient + "?");
+        confirm.setContentText("Are you sure you want to delete this ingredient? This action cannot be undone.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
         if (selectedRecipe.removeIngredient(selectedIngredient.getName())) {
             refreshIngredients(selectedRecipe);
             syncInventoryWithRecipeIngredients();
             refreshInventoryView(null);
             ingredientNameField.clear();
             ingredientAmountField.clear();
+            ingredientUnitField.setValue(null);
             persistAndReport(ingredientStatusLabel, "Ingredient deleted.");
             return;
         }
