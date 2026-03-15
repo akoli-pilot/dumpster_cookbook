@@ -49,6 +49,8 @@ public class CookBookUI extends Application {
     private Label ingredientStatusLabel;
     private Label inventoryStatusLabel;
 
+    private Stage primaryStage;
+
     /**
      * Initializes the scene graph, loads persisted data, and applies the app theme.
      */
@@ -88,6 +90,8 @@ public class CookBookUI extends Application {
         stage.setTitle("Dumpster Cookbook");
         stage.setScene(scene);
         stage.show();
+
+        this.primaryStage = stage;
     }
 
     /**
@@ -160,6 +164,18 @@ public class CookBookUI extends Application {
             recipeNameField.setText(selected.getName());
             recipePicker.getSelectionModel().select(selected);
             refreshIngredients(selected);
+        });
+
+        recipeListView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+
+                Recipe selected = recipeListView.getSelectionModel().getSelectedItem();
+
+                if (selected != null) {
+                    Scene currentScene = primaryStage.getScene();
+                    new RecipeDetailsView(primaryStage, currentScene, selected).show();
+                }
+            }
         });
 
         Label listTitle = new Label("Recipe List");
