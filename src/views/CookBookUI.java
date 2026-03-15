@@ -439,6 +439,17 @@ public class CookBookUI extends Application {
             return;
         }
 
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Recipe");
+        confirm.setHeaderText("Delete Recipe: " + selected.getName() + "?");
+        confirm.setContentText("Are you sure you want to delete this recipe? This action cannot be undone.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
         String deletedName = selected.getName();
         if (cookBook.removeRecipe(deletedName)) {
             refreshRecipes(null);
@@ -530,6 +541,17 @@ public class CookBookUI extends Application {
 
         if (selectedIngredient == null) {
             ingredientStatusLabel.setText("Select an ingredient to delete.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Delete Ingredient");
+        confirm.setHeaderText("Delete Ingredient: " + selectedIngredient + "?");
+        confirm.setContentText("Are you sure you want to delete this ingredient? This action cannot be undone.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
             return;
         }
 
