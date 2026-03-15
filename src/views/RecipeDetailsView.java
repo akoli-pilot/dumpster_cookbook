@@ -65,9 +65,16 @@ public class RecipeDetailsView {
 
         TextArea directionsArea = new TextArea(recipe.getDirections());
         directionsArea.setWrapText(true);
-        directionsArea.setEditable(false);
+        directionsArea.setEditable(true);
         directionsArea.getStyleClass().add("md-input");
         directionsArea.setStyle("-fx-control-inner-background: #211f26;");
+
+        Button saveButton = new Button("Save Directions");
+        saveButton.getStyleClass().add("filled-button");
+
+        saveButton.setOnAction(e -> {
+            recipe.setDirections(directionsArea.getText());
+        });
 
         VBox directionsCard = new VBox(10, directionsLabel, directionsArea);
         directionsCard.getStyleClass().add("card");
@@ -77,7 +84,8 @@ public class RecipeDetailsView {
                 topBar,
                 title,
                 ingredientsCard,
-                directionsCard
+                directionsCard,
+                saveButton
 
         );
         Scene scene = new Scene(scrollPane, 600, 500);
