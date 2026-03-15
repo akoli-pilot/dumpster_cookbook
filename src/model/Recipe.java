@@ -146,6 +146,24 @@ public class Recipe implements Serializable {
         return maxServings;
     }
 
+    public Map<String, Double> calculateIngredientAmountsForServings(double servings)
+    {
+        Map<String, Double> requiredAmounts = new LinkedHashMap<>();
+
+        if (servings <= 0)
+        {
+            return requiredAmounts;
+        }
+
+        for (Ingredient ingredient : ingredients)
+        {
+            double totalAmount = ingredient.getAmountPerServing() * servings;
+            requiredAmounts.put(ingredient.getName(), totalAmount);
+        }
+
+        return requiredAmounts;
+    }
+
     /** returns recipe name for list controls. */
     @Override
     public String toString() {
