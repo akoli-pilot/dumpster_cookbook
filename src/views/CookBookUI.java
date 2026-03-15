@@ -36,11 +36,11 @@ public class CookBookUI extends Application {
     private ListView<Ingredient> ingredientListView;
     private ListView<String> inventoryListView;
     private ComboBox<Recipe> recipePicker;
+    private ComboBox<String> ingredientUnitField;
 
     private TextField recipeNameField;
     private TextField ingredientNameField;
     private TextField ingredientAmountField;
-    private TextField ingredientUnitField;
     private TextField inventoryIngredientField;
     private TextField inventoryAmountField;
 
@@ -243,13 +243,13 @@ public class CookBookUI extends Application {
             if (selected == null) {
                 ingredientNameField.clear();
                 ingredientAmountField.clear();
-                ingredientUnitField.clear();
+                ingredientUnitField.setValue(null);
                 return;
             }
 
             ingredientNameField.setText(selected.getName());
             ingredientAmountField.setText(String.valueOf(selected.getAmountPerServing()));
-            ingredientUnitField.setText(selected.getUnit());
+            ingredientUnitField.setValue(selected.getUnit());
         });
 
         Label recipeSelectorTitle = new Label("Recipe");
@@ -270,8 +270,31 @@ public class CookBookUI extends Application {
         ingredientAmountField.setPromptText("Amount per serving");
         ingredientAmountField.getStyleClass().add("md-input");
 
-        ingredientUnitField = new TextField();
-        ingredientUnitField.setPromptText("Unit of serving");
+        ingredientUnitField = new ComboBox<>();
+        ingredientUnitField.getItems().addAll(
+                "Cup",
+                "Tablespoon",
+                "Teaspoon",
+                "Milliliter",
+                "Liter",
+                "Pint",
+                "Quart",
+                "Gallon",
+                "Gram",
+                "Kilogram",
+                "Ounce",
+                "Pound",
+                "Count",
+                "Piece",
+                "Pinch",
+                "Dash",
+                "Slice",
+                "Clove",
+                "Can",
+                "Package",
+                "Stick"
+        );
+        ingredientUnitField.setPromptText("Unit of Measurement");
         ingredientUnitField.getStyleClass().add("md-input");
 
         Button createButton = new Button("Create");
@@ -292,7 +315,7 @@ public class CookBookUI extends Application {
             ingredientListView.getSelectionModel().clearSelection();
             ingredientNameField.clear();
             ingredientAmountField.clear();
-            ingredientUnitField.clear();
+            ingredientUnitField.setValue(null);
             ingredientStatusLabel.setText("");
         });
 
@@ -470,7 +493,7 @@ public class CookBookUI extends Application {
             ingredientListView.getSelectionModel().clearSelection();
             ingredientNameField.clear();
             ingredientAmountField.clear();
-            ingredientUnitField.clear();
+            ingredientUnitField.setValue(null);
             persistAndReport(recipeStatusLabel, "Recipe deleted.");
             return;
         }
@@ -492,7 +515,7 @@ public class CookBookUI extends Application {
             return;
         }
 
-        if (selectedRecipe.addIngredient(ingredientNameField.getText(), amount, ingredientUnitField.getText())) {
+        if (selectedRecipe.addIngredient(ingredientNameField.getText(), amount, ingredientUnitField.getValue())) {
             refreshIngredients(selectedRecipe);
             syncInventoryWithRecipeIngredients();
             refreshInventoryView(ingredientNameField.getText().trim());
@@ -527,7 +550,7 @@ public class CookBookUI extends Application {
         String existingName = selectedIngredient.getName();
         String newName = ingredientNameField.getText();
 
-        if (selectedRecipe.updateIngredient(existingName, newName, amount, ingredientUnitField.getText())) {
+        if (selectedRecipe.updateIngredient(existingName, newName, amount, ingredientUnitField.getValue())) {
             // Preserve available stock when a user only renames an ingredient.
             transferInventoryAmount(existingName, newName);
             refreshIngredients(selectedRecipe);
@@ -574,7 +597,7 @@ public class CookBookUI extends Application {
             refreshInventoryView(null);
             ingredientNameField.clear();
             ingredientAmountField.clear();
-            ingredientUnitField.clear();
+            ingredientUnitField.setValue(null);
             persistAndReport(ingredientStatusLabel, "Ingredient deleted.");
             return;
         }
