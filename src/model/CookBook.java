@@ -1,10 +1,7 @@
 package model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * aggregate root for recipe management
@@ -54,6 +51,15 @@ public class CookBook implements Serializable {
         return true;
     }
 
+    public Map<String, Double> calculateIngredientsForRecipe(String recipeName, double servings) {
+        Optional<Recipe> recipe = findRecipe(recipeName);
+
+        if (recipe.isEmpty()) {
+            return new LinkedHashMap<>();
+        }
+
+        return recipe.get().calculateIngredientAmountsForServings(servings);
+    }
     /**
      * renames an existing recipe while guarding against duplicate names
      */

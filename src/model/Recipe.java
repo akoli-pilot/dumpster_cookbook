@@ -164,6 +164,24 @@ public class Recipe implements Serializable {
         return requiredAmounts;
     }
 
+    public List<String> getScaledIngredientDescriptions(double servings) {
+        List<String> results = new ArrayList<>();
+
+        if (servings <= 0) {
+            return results;
+        }
+
+        for (Ingredient ingredient : ingredients) {
+            double totalAmount = ingredient.getAmountPerServing() * servings;
+            results.add(String.format("%.2f %s %s",
+                    totalAmount,
+                    ingredient.getUnit(),
+                    ingredient.getName()));
+        }
+
+        return results;
+    }
+
     /** returns recipe name for list controls. */
     @Override
     public String toString() {
