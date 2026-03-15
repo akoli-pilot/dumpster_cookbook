@@ -26,7 +26,7 @@ public class Recipe implements Serializable {
      * adds an ingredient if name is valid, amount is positive, and no duplicate exists
      */
     public boolean addIngredient(String name, double amount, String unit) {
-        if (name == null || name.isBlank() || amount <= 0) {
+        if (name == null || name.isBlank() || amount <= 0 || unit == null || unit.isBlank()) {
             return false;
         }
 
@@ -85,7 +85,7 @@ public class Recipe implements Serializable {
      * updates an ingredient and prevents duplicate names in the same recipe
      */
     public boolean updateIngredient(String existingName, String newName, double newAmount, String newUnit) {
-        if (newName == null || newName.isBlank() || newAmount <= 0) {
+        if (newName == null || newName.isBlank() || newAmount <= 0 || newUnit == null || newUnit.isBlank()) {
             return false;
         }
 
