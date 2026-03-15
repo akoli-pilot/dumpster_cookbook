@@ -10,12 +10,6 @@ The Dumpster Cookbook is a community-driven project focused on sustainability, u
 * **Preservation Techniques:** How to make ingredients last longer.
 * **Sustainability Tips:** Reducing household waste.
 
-## Table of Contents
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
-
 ## Installation
 
 ```bash
