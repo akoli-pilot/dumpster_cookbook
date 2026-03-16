@@ -174,7 +174,14 @@ public class CookBookUI extends Application {
 
                 if (selected != null) {
                     Scene currentScene = primaryStage.getScene();
-                    new RecipeDetailsView(primaryStage, currentScene, selected).show();
+                    new RecipeDetailsView(
+                            primaryStage,
+                            currentScene,
+                            selected,
+                            cookBook,
+                            storage,
+                            inventoryByIngredient
+                    ).show();
                 }
             }
         });
@@ -940,6 +947,12 @@ public class CookBookUI extends Application {
 
             try {
                 servings = Double.parseDouble(text);
+                if (servings <= 0) {
+                    Label error = new Label("Servings must be greater than 0");
+                    error.getStyleClass().add("body");
+                    results.getChildren().add(error);
+                    return;
+                }
             } catch (NumberFormatException ex) {
                 Label error = new Label("Servings must be a number");
                 error.getStyleClass().add("body");

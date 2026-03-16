@@ -8,18 +8,31 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import model.Recipe;
+import model.CookBook;
+import model.CookBookStorage;
+import java.util.Map;
 
 public class RecipeDetailsView {
 
     private Stage stage;
     private Parent previousRoot;
     private Recipe recipe;
+    private CookBook cookBook;
+    private CookBookStorage storage;
+    private Map<String, Double> inventoryByIngredient;
 
-
-    public RecipeDetailsView(Stage stage, Scene previousScene, Recipe recipe) {
+    public RecipeDetailsView(Stage stage,
+                             Scene previousScene,
+                             Recipe recipe,
+                             CookBook cookBook,
+                             CookBookStorage storage,
+                             Map<String, Double> inventoryByIngredient) {
         this.stage = stage;
         this.previousRoot = previousScene.getRoot();
         this.recipe = recipe;
+        this.cookBook = cookBook;
+        this.storage = storage;
+        this.inventoryByIngredient = inventoryByIngredient;
     }
 
     public void show() {
@@ -60,6 +73,9 @@ public class RecipeDetailsView {
             ingredientsList.getChildren().add(ingredient);
         });
 
+        Label saveStatus = new Label();
+        saveStatus.getStyleClass().add("status-text");
+
         VBox ingredientsCard = new VBox(10, ingredientsLabel, ingredientsList);
         ingredientsCard.getStyleClass().add("card");
         ingredientsCard.setMaxWidth(700);
@@ -80,6 +96,12 @@ public class RecipeDetailsView {
 
         saveButton.setOnAction(e -> {
             recipe.setDirections(directionsArea.getText());
+
+            if (storage.save(cookBook, inventoryByIngredient)) {
+                saveStatus.setText("Directions saved.");
+            } else {
+                saveStatus.setText("Failed to save directions.");
+            }
         });
 
         VBox directionsCard = new VBox(10, directionsLabel, directionsArea);
