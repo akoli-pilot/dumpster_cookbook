@@ -3,6 +3,7 @@ package views;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
@@ -11,13 +12,13 @@ import model.Recipe;
 public class RecipeDetailsView {
 
     private Stage stage;
-    private Scene previousScene;
+    private Parent previousRoot;
     private Recipe recipe;
 
 
     public RecipeDetailsView(Stage stage, Scene previousScene, Recipe recipe) {
         this.stage = stage;
-        this.previousScene = previousScene;
+        this.previousRoot = previousScene.getRoot();
         this.recipe = recipe;
     }
 
@@ -38,7 +39,9 @@ public class RecipeDetailsView {
 
         Button backButton = new Button("Back");
         backButton.getStyleClass().addAll("button", "text-button");
-        backButton.setOnAction(e -> stage.setScene(previousScene));
+        backButton.setOnAction(e -> {
+            stage.getScene().setRoot(previousRoot);
+        });
 
         HBox topBar = new HBox(backButton);
         topBar.getStyleClass().add("top-bar");
@@ -88,10 +91,8 @@ public class RecipeDetailsView {
                 saveButton
 
         );
-        Scene scene = new Scene(scrollPane, 600, 500);
+        Scene scene = stage.getScene();
+        scene.setRoot(scrollPane);
 
-        scene.getStylesheets().add(getClass().getResource("material3.css").toExternalForm());
-
-        stage.setScene(scene);
     }
 }
