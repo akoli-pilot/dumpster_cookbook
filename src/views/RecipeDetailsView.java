@@ -27,7 +27,7 @@ public class RecipeDetailsView {
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));
         root.getStyleClass().add("screen");
-        root.setMaxWidth(900);
+        root.setMaxWidth(Double.MAX_VALUE);
         root.setAlignment(Pos.TOP_CENTER);
 
         StackPane appShell = new StackPane(root);
@@ -52,12 +52,13 @@ public class RecipeDetailsView {
         Label ingredientsLabel = new Label("Ingredients");
         ingredientsLabel.getStyleClass().add("field-label");
 
-        ListView<String> ingredientsList = new ListView<>();
-        ingredientsList.getStyleClass().add("md-list");
+        VBox ingredientsList = new VBox(6);
 
-        recipe.getIngredients().forEach(i ->
-                ingredientsList.getItems().add(i.toString())
-        );
+        recipe.getIngredients().forEach(i -> {
+            Label ingredient = new Label("• " + i.toString());
+            ingredient.getStyleClass().add("body");
+            ingredientsList.getChildren().add(ingredient);
+        });
 
         VBox ingredientsCard = new VBox(10, ingredientsLabel, ingredientsList);
         ingredientsCard.getStyleClass().add("card");
@@ -71,6 +72,8 @@ public class RecipeDetailsView {
         directionsArea.setEditable(true);
         directionsArea.getStyleClass().add("md-input");
         directionsArea.setStyle("-fx-control-inner-background: #211f26;");
+
+        VBox.setVgrow(directionsArea, Priority.ALWAYS);
 
         Button saveButton = new Button("Save Directions");
         saveButton.getStyleClass().add("filled-button");
