@@ -939,6 +939,8 @@ public class CookBookUI extends Application {
                         scaled + " " + i.getUnit() + " " + i.getName()
                 );
                 label.getStyleClass().add("body");
+                label.setWrapText(true);
+                label.setMaxWidth(Double.MAX_VALUE);
 
                 results.getChildren().add(label);
             });
@@ -984,12 +986,16 @@ public class CookBookUI extends Application {
             if (recipe == null) return;
 
             double maxServings = Double.MAX_VALUE;
+            boolean hasInput = false;
 
             for (Ingredient i : recipe.getIngredients()) {
 
                 TextField field = ingredientFields.get(i);
 
-                if (field == null || field.getText().isBlank()) continue;
+                if (field == null || field.getText().isBlank()) {
+                    result.setText("All ingredient amounts must be filled.");
+                    return;
+                }
 
                 double inventory;
 
@@ -999,8 +1005,13 @@ public class CookBookUI extends Application {
                     continue;
                 }
                 double possible = inventory / i.getAmountPerServing();
+                hasInput = true;
 
                 maxServings = Math.min(maxServings, possible);
+            }
+            if (!hasInput) {
+                result.setText("Enter Ingredient Amount");
+                return;
             }
 
             int confirmed = (int)Math.floor(maxServings);
