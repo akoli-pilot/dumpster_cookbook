@@ -947,19 +947,24 @@ public class CookBookUI extends Application {
                 return;
             }
 
-            recipe.getIngredients().forEach(i -> {
+            Map<String, Double> scaledAmounts = recipe.calculateIngredientAmountsForServings(servings);
 
-                double scaled = i.getAmountPerServing() * servings;
+            for (Ingredient i : recipe.getIngredients()) {
+                Double scaled = scaledAmounts.get(i.getName());
+
+                if (scaled == null) {
+                    continue;
+                }
 
                 Label label = new Label(
-                        scaled + " " + i.getUnit() + " " + i.getName()
+                        String.format("%.2f %s %s", scaled, i.getUnit(), i.getName())
                 );
                 label.getStyleClass().add("body");
                 label.setWrapText(true);
                 label.setMaxWidth(Double.MAX_VALUE);
 
                 results.getChildren().add(label);
-            });
+            }
 
         });
 
@@ -1001,11 +1006,9 @@ public class CookBookUI extends Application {
             Recipe recipe = recipeList.getSelectionModel().getSelectedItem();
             if (recipe == null) return;
 
-            double maxServings = Double.MAX_VALUE;
-            boolean hasInput = false;
+            Map<String, Double> available = new HashMap<>();
 
             for (Ingredient i : recipe.getIngredients()) {
-
                 TextField field = ingredientFields.get(i);
 
                 if (field == null || field.getText().isBlank()) {
@@ -1022,18 +1025,16 @@ public class CookBookUI extends Application {
                     return;
                 }
 
-                double possible = inventory / i.getAmountPerServing();
-                hasInput = true;
+                if (inventory < 0) {
+                    result.setText("Ingredient amounts cannot be negative.");
+                    return;
+                }
 
-                maxServings = Math.min(maxServings, possible);
+                available.put(i.getName(), inventory);
             }
 
-            if (!hasInput) {
-                result.setText("Enter Ingredient Amount");
-                return;
-            }
-
-            int confirmed = (int)Math.floor(maxServings);
+            double maxServings = recipe.calculateMaxServings(available);
+            int confirmed = (int) Math.floor(maxServings);
 
             result.setText(
                     "Servings: " + confirmed +

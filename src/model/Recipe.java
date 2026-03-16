@@ -34,7 +34,7 @@ public class Recipe implements Serializable {
             return false;
         }
 
-        ingredients.add(new Ingredient(name.trim(), amount, unit));
+        ingredients.add(new Ingredient(name.trim(), amount, unit.trim()));
         return true;
     }
 
