@@ -35,6 +35,7 @@ public class CookBookUI extends Application {
     private ListView<Recipe> recipeListView;
     private ListView<Ingredient> ingredientListView;
     private ListView<String> inventoryListView;
+    private ListView<Recipe> calculatorRecipeListView;
     private ComboBox<Recipe> recipePicker;
     private ComboBox<String> ingredientUnitField;
 
@@ -70,7 +71,7 @@ public class CookBookUI extends Application {
 
         TabPane tabPane = new TabPane();
         tabPane.getStyleClass().add("md-tabs");
-        tabPane.getTabs().addAll(buildRecipeTab(), buildIngredientTab(), buildInventoryTab());
+        tabPane.getTabs().addAll(buildRecipeTab(), buildIngredientTab(), buildInventoryTab(), buildCalculatorTab());
         VBox.setVgrow(tabPane, Priority.ALWAYS);
 
         root.getChildren().addAll(title, subtitle, tabPane);
@@ -439,6 +440,50 @@ public class CookBookUI extends Application {
         HBox.setHgrow(leftSection, Priority.ALWAYS);
         HBox.setHgrow(rightSection, Priority.ALWAYS);
         content.setPadding(new Insets(12));
+
+        tab.setContent(content);
+        return tab;
+    }
+
+    /** Create Calculator Tab */
+    private Tab buildCalculatorTab() {
+        Tab tab = new Tab("Calculator");
+        tab.setClosable(false);
+
+        HBox content = new HBox(16);
+        content.setPadding(new Insets(12));
+
+        /* LEFT SIDE (Recipe List Card) */
+
+        calculatorRecipeListView = new ListView<>(recipes);
+        calculatorRecipeListView.getStyleClass().add("md-list");
+
+        Label listTitle = new Label("Recipes");
+        listTitle.getStyleClass().add("title");
+
+        VBox leftSection = new VBox(10, listTitle, calculatorRecipeListView);
+        leftSection.getStyleClass().add("card");
+        VBox.setVgrow(calculatorRecipeListView, Priority.ALWAYS);
+
+
+        /* RIGHT SIDE (Calculator Cards) */
+
+        VBox calculators = new VBox(16,
+                buildServingCalculator(calculatorRecipeListView),
+                buildInventoryCalculator(calculatorRecipeListView)
+        );
+
+        VBox rightSection = new VBox(calculators);
+        rightSection.getStyleClass().add("card");
+        VBox.setVgrow(rightSection, Priority.ALWAYS);
+
+
+        /* Layout */
+
+        HBox.setHgrow(leftSection, Priority.ALWAYS);
+        HBox.setHgrow(rightSection, Priority.ALWAYS);
+
+        content.getChildren().addAll(leftSection, rightSection);
 
         tab.setContent(content);
         return tab;
@@ -821,6 +866,10 @@ public class CookBookUI extends Application {
         recipeListView.getSelectionModel().select(recipeToSelect);
         recipePicker.getSelectionModel().select(recipeToSelect);
         refreshIngredients(recipeToSelect);
+
+        if(calculatorRecipeListView!=null){
+            calculatorRecipeListView.refresh();
+        }
     }
 
     /** updates ingredient list for selected recipe */
@@ -831,6 +880,10 @@ public class CookBookUI extends Application {
         }
 
         ingredients.setAll(selectedRecipe.getIngredients());
+
+        if(calculatorRecipeListView!=null){
+            calculatorRecipeListView.refresh();
+        }
     }
 
     /**
@@ -843,5 +896,136 @@ public class CookBookUI extends Application {
         }
 
         statusLabel.setText(successMessage + " Warning: failed to save data to disk.");
+    }
+
+    /** Servings Calculator */
+    private VBox buildServingCalculator(ListView<Recipe> recipeList) {
+
+        VBox card = new VBox(10);
+        card.getStyleClass().add("card");
+
+        Label title = new Label("Serving Calculator");
+        title.getStyleClass().add("title");
+
+        TextField servingsInput = new TextField();
+        servingsInput.setPromptText("Desired servings");
+        servingsInput.getStyleClass().add("md-input");
+
+        VBox results = new VBox(5);
+
+        Button calculate = new Button("Calculate");
+        calculate.getStyleClass().add("filled-button");
+
+        calculate.setOnAction(e -> {
+
+            Recipe recipe = recipeList.getSelectionModel().getSelectedItem();
+
+            if (recipe == null) return;
+
+            results.getChildren().clear();
+
+            double servings = Double.parseDouble(servingsInput.getText());
+
+            recipe.getIngredients().forEach(i -> {
+
+                double scaled = i.getAmountPerServing() * servings;
+
+                Label label = new Label(
+                        scaled + " " + i.getUnit() + " " + i.getName()
+                );
+                label.getStyleClass().add("body");
+
+                results.getChildren().add(label);
+            });
+
+        });
+
+        card.getChildren().addAll(
+                title,
+                servingsInput,
+                calculate,
+                results
+        );
+
+        return card;
+    }
+
+    /** Inventory Calculator */
+    private VBox buildInventoryCalculator(ListView<Recipe> recipeList) {
+
+        VBox card = new VBox(10);
+        card.getStyleClass().add("card");
+
+        Label title = new Label("Inventory Calculator");
+        title.getStyleClass().add("title");
+
+        VBox ingredientInputs = new VBox(6);
+
+        Label result = new Label();
+        result.getStyleClass().add("body");
+
+        Button calculate = new Button("Calculate Servings");
+        calculate.getStyleClass().add("filled-button");
+
+        calculate.setOnAction(e -> {
+
+            Recipe recipe = recipeList.getSelectionModel().getSelectedItem();
+            if (recipe == null) return;
+
+            double maxServings = Double.MAX_VALUE;
+
+            for (Ingredient i : recipe.getIngredients()) {
+
+                TextField field = (TextField) ingredientInputs.lookup("#" + i.getName());
+
+                if (field == null || field.getText().isBlank()) continue;
+
+                double inventory = Double.parseDouble(field.getText());
+                double possible = inventory / i.getAmountPerServing();
+
+                maxServings = Math.min(maxServings, possible);
+            }
+
+            int confirmed = (int)Math.floor(maxServings);
+
+            result.setText(
+                    "Servings: " + confirmed +
+                            " (" + String.format("%.2f", maxServings) + " possible)"
+            );
+        });
+
+        recipeList.getSelectionModel().selectedItemProperty().addListener((obs,o,n)->{
+
+            ingredientInputs.getChildren().clear();
+
+            if (n == null) return;
+
+            for (Ingredient i : n.getIngredients()) {
+
+                Label label = new Label(i.getName()+ " (" + i.getUnit() + ")");
+                label.getStyleClass().add("field-label");
+                label.setPrefWidth(140);
+                label.setMinWidth(140);
+                label.setWrapText(true);
+
+                TextField input = new TextField();
+                input.setId(i.getName());
+                input.getStyleClass().add("md-input");
+
+                HBox row = new HBox(10,label,input);
+                row.setAlignment(Pos.CENTER_LEFT);
+
+                ingredientInputs.getChildren().add(row);
+            }
+        });
+
+        card.getChildren().addAll(
+                title,
+                ingredientInputs,
+                calculate,
+                result
+        );
+
+        return card;
     }
 }
