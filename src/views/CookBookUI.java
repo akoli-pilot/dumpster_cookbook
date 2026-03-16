@@ -922,17 +922,30 @@ public class CookBookUI extends Application {
         calculate.setOnAction(e -> {
 
             Recipe recipe = recipeList.getSelectionModel().getSelectedItem();
-
             if (recipe == null) return;
 
             results.getChildren().clear();
 
-            if (servingsInput.getText().isBlank()) {
-                results.getChildren().add(new Label("Enter a serving amount"));
+            String text = servingsInput.getText();
+
+            /** Empty input check */
+            if (text.isBlank()) {
+                Label error = new Label("Enter a serving amount");
+                error.getStyleClass().add("body");
+                results.getChildren().add(error);
                 return;
             }
 
-            double servings = Double.parseDouble(servingsInput.getText());
+            double servings;
+
+            try {
+                servings = Double.parseDouble(text);
+            } catch (NumberFormatException ex) {
+                Label error = new Label("Servings must be a number");
+                error.getStyleClass().add("body");
+                results.getChildren().add(error);
+                return;
+            }
 
             recipe.getIngredients().forEach(i -> {
 
@@ -1005,13 +1018,16 @@ public class CookBookUI extends Application {
                 try {
                     inventory = Double.parseDouble(field.getText());
                 } catch (NumberFormatException ex) {
-                    continue;
+                    result.setText("Ingredients must be a number");
+                    return;
                 }
+
                 double possible = inventory / i.getAmountPerServing();
                 hasInput = true;
 
                 maxServings = Math.min(maxServings, possible);
             }
+
             if (!hasInput) {
                 result.setText("Enter Ingredient Amount");
                 return;
