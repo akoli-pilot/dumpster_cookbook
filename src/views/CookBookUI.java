@@ -924,6 +924,11 @@ public class CookBookUI extends Application {
 
             results.getChildren().clear();
 
+            if (servingsInput.getText().isBlank()) {
+                results.getChildren().add(new Label("Enter a serving amount"));
+                return;
+            }
+
             double servings = Double.parseDouble(servingsInput.getText());
 
             recipe.getIngredients().forEach(i -> {
@@ -940,6 +945,10 @@ public class CookBookUI extends Application {
 
         });
 
+        recipeList.getSelectionModel().selectedItemProperty().addListener((obs,o,n)-> {
+                    servingsInput.clear();
+                    results.getChildren().clear();
+                });
         card.getChildren().addAll(
                 title,
                 servingsInput,
@@ -961,6 +970,8 @@ public class CookBookUI extends Application {
 
         VBox ingredientInputs = new VBox(6);
 
+        Map<Ingredient, TextField> ingredientFields = new HashMap<>();
+
         Label result = new Label();
         result.getStyleClass().add("body");
 
@@ -976,11 +987,17 @@ public class CookBookUI extends Application {
 
             for (Ingredient i : recipe.getIngredients()) {
 
-                TextField field = (TextField) ingredientInputs.lookup("#" + i.getName());
+                TextField field = ingredientFields.get(i);
 
                 if (field == null || field.getText().isBlank()) continue;
 
-                double inventory = Double.parseDouble(field.getText());
+                double inventory;
+
+                try {
+                    inventory = Double.parseDouble(field.getText());
+                } catch (NumberFormatException ex) {
+                    continue;
+                }
                 double possible = inventory / i.getAmountPerServing();
 
                 maxServings = Math.min(maxServings, possible);
@@ -997,6 +1014,8 @@ public class CookBookUI extends Application {
         recipeList.getSelectionModel().selectedItemProperty().addListener((obs,o,n)->{
 
             ingredientInputs.getChildren().clear();
+            ingredientFields.clear();
+            result.setText("");
 
             if (n == null) return;
 
@@ -1009,8 +1028,8 @@ public class CookBookUI extends Application {
                 label.setWrapText(true);
 
                 TextField input = new TextField();
-                input.setId(i.getName());
                 input.getStyleClass().add("md-input");
+                ingredientFields.put(i, input);
 
                 HBox row = new HBox(10,label,input);
                 row.setAlignment(Pos.CENTER_LEFT);
