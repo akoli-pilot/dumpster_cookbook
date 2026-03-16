@@ -465,6 +465,9 @@ public class CookBookUI extends Application {
         leftSection.getStyleClass().add("card");
         VBox.setVgrow(calculatorRecipeListView, Priority.ALWAYS);
 
+        leftSection.setPrefWidth(320);
+        leftSection.setMinWidth(280);
+
 
         /* RIGHT SIDE (Calculator Cards) */
 
@@ -480,7 +483,7 @@ public class CookBookUI extends Application {
 
         /* Layout */
 
-        HBox.setHgrow(leftSection, Priority.ALWAYS);
+        HBox.setHgrow(leftSection, Priority.NEVER);
         HBox.setHgrow(rightSection, Priority.ALWAYS);
 
         content.getChildren().addAll(leftSection, rightSection);
